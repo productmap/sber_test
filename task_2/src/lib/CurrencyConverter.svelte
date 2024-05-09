@@ -8,6 +8,14 @@
   const converter = currencyStore();
   converter.load();
 
+  let fromCurrencyRate = 0;
+  let toCurrencyRate = 0;
+
+  $: {
+    fromCurrencyRate = $converter.conversionRates[$converter.fromCurrency];
+    toCurrencyRate = $converter.conversionRates[$converter.toCurrency];
+  }
+
   function handleCurrencyAmountChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     const value = parseFloat(target.value);
@@ -18,10 +26,11 @@
 
     if (target.classList.contains('from-amount')) {
       converter.update((state) => ({...state, fromAmount: value}));
+      convertToAmount();
     } else if (target.classList.contains('to-amount')) {
       converter.update((state) => ({...state, toAmount: value}));
+      convertFromAmount();
     }
-    convertCurrency();
   }
 
   function handleCurrencyChange(event: CustomEvent, name: string): void {
@@ -29,19 +38,23 @@
 
     if (name === 'fromCurrency') {
       converter.update((state) => ({...state, fromCurrency: target.value}));
+      convertToAmount();
     } else if (name === 'toCurrency') {
       converter.update((state) => ({...state, toCurrency: target.value}));
+      convertFromAmount();
     }
-    convertCurrency();
   }
 
-  function convertCurrency() {
-    const fromCurrencyRate = $converter.conversionRates[$converter.fromCurrency];
-    const toCurrencyRate = $converter.conversionRates[$converter.toCurrency];
-    const convertedToAmount = $converter.fromAmount * (toCurrencyRate / fromCurrencyRate);
-    const convertedFromAmount = $converter.toAmount * (fromCurrencyRate / toCurrencyRate);
+  function convertToAmount(): void {
+    const { fromAmount } = $converter;
+    const convertedToAmount = fromAmount * (toCurrencyRate / fromCurrencyRate);
+    converter.update((state) => ({...state, toAmount: convertedToAmount}));
+  }
 
-    converter.update((state) => ({...state, toAmount: convertedToAmount, fromAmount: convertedFromAmount}));
+  function convertFromAmount(): void {
+    const { toAmount } = $converter;
+    const convertedFromAmount = toAmount * (fromCurrencyRate / toCurrencyRate);
+    converter.update((state) => ({...state, fromAmount: convertedFromAmount}));
   }
 </script>
 
@@ -56,6 +69,7 @@
               min="0"
               value={$converter.fromAmount.toFixed(2)}
               on:input={handleCurrencyAmountChange}
+              on:change={handleCurrencyAmountChange}
       />
       <Select items={$converter.currencies}
               value={$converter.fromCurrency}
@@ -73,6 +87,7 @@
               min="0"
               value={$converter.toAmount.toFixed(2)}
               on:input={handleCurrencyAmountChange}
+              on:change={handleCurrencyAmountChange}
       />
       <Select items={$converter.currencies}
               value={$converter.toCurrency}

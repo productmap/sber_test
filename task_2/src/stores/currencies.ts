@@ -8,7 +8,8 @@ type StoreState = {
   toCurrency: string;
   fromAmount: number;
   toAmount: number;
-  conversionRate: number;
+  toCurrencyRate: number;
+  fromCurrencyRate: number;
   loading: boolean;
   error: Error | null;
 };
@@ -21,7 +22,8 @@ export const currencyStore = () => {
     toCurrency: "RUB",
     fromAmount: 0,
     toAmount: 0,
-    conversionRate: 0,
+    toCurrencyRate: 0,
+    fromCurrencyRate: 0,
     loading: true,
     error: null,
   });

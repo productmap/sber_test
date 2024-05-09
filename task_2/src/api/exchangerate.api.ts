@@ -9,6 +9,6 @@ export const getExchangeRate = async () => {
   return await response.json();
 };
 
-export const getLocalRate = async () => {
+export const getMockRate = async () => {
   return currenciesData;
 };
